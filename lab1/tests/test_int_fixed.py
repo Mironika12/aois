@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from my_math.int_fixed import (
+from binary_math.int_fixed import (
     decimal_to_binary_unsigned,
     direct_code,
     ones_complement,

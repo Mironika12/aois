@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from my_math.float_ieee import (
+from binary_math.float_ieee import (
     float_to_ieee754,
     ieee754_to_decimal,
     ieee_add,

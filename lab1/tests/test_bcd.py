@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from my_math.bcd import decimal_to_bcd, bcd_to_decimal, add_bcd
+from binary_math.bcd import decimal_to_bcd, bcd_to_decimal, add_bcd
 
 
 def test_decimal_to_bcd_basic():

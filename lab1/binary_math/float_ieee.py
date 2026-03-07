@@ -1,5 +1,5 @@
 import numpy as np
-from my_math.int_fixed import decimal_to_binary_unsigned
+from binary_math.int_fixed import decimal_to_binary_unsigned
 
 
 def float_to_ieee754(x):
@@ -109,7 +109,6 @@ def ieee_add(a_arr, b_arr):
     mant_a[1:] = a_arr[9:]
     mant_b[1:] = b_arr[9:]
 
-    # выравнивание порядков
     while exp_a > exp_b:
         mant_b[1:] = mant_b[:-1]
         mant_b[0] = 0
@@ -122,7 +121,6 @@ def ieee_add(a_arr, b_arr):
 
     exponent = exp_a
 
-    # сложение мантисс
     mant_res = np.zeros(25, dtype=int)
 
     if sign_a == sign_b:
@@ -138,7 +136,7 @@ def ieee_add(a_arr, b_arr):
 
     else:
 
-        if (mant_a > mant_b).any():
+        if tuple(mant_a) >= tuple(mant_b):
             big = mant_a
             small = mant_b
             sign_res = sign_a
@@ -158,7 +156,6 @@ def ieee_add(a_arr, b_arr):
                 mant_res[i+1] = diff
                 borrow = 0
 
-    # нормализация
     if mant_res[0] == 1:
 
         mant_res[1:] = mant_res[:-1]

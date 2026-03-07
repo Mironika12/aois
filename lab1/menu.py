@@ -1,6 +1,6 @@
-from my_math.int_fixed import *
-from my_math.float_ieee import *
-from my_math.bcd import decimal_to_bcd, bcd_to_decimal, add_bcd
+from binary_math.int_fixed import *
+from binary_math.float_ieee import *
+from binary_math.bcd import decimal_to_bcd, bcd_to_decimal, add_bcd
 
 def print_codes(n):
     print(f"Число: {n}")
