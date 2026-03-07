@@ -2,8 +2,15 @@ import numpy as np
 from binary_math.int_fixed import decimal_to_binary_unsigned
 
 
+BITS32 = 32
+BITS31 = 31
+BIAS = 127
+EXP = 8
+MANTISSA = 23
+
+
 def float_to_ieee754(x):
-    result = np.zeros(32, dtype=int)
+    result = np.zeros(BITS32, dtype=int)
 
     if x < 0:
         result[0] = 1
@@ -27,7 +34,7 @@ def float_to_ieee754(x):
 
     frac_bits = []
 
-    for _ in range(30):
+    for _ in range(BITS31-1):
         fraction *= 2
         bit = int(fraction)
         frac_bits.append(bit)
@@ -47,13 +54,13 @@ def float_to_ieee754(x):
         exponent = -(shift + 1)
         mantissa = frac_bits[shift + 1:]
 
-    exponent = exponent + 127
+    exponent = exponent + BIAS
 
-    exp_bits = decimal_to_binary_unsigned(exponent, 8)
+    exp_bits = decimal_to_binary_unsigned(exponent, EXP)
 
     result[1:9] = exp_bits
 
-    for i in range(23):
+    for i in range(MANTISSA):
         if i < len(mantissa):
             result[9 + i] = mantissa[i]
 
@@ -67,7 +74,7 @@ def ieee754_to_decimal(arr):
     for bit in arr[1:9]:
         exponent = exponent * 2 + bit
 
-    exponent -= 127
+    exponent -= BIAS
 
     mantissa = 1
 
@@ -86,7 +93,7 @@ def ieee754_to_decimal(arr):
 
 def ieee_add(a_arr, b_arr):
 
-    result = np.zeros(32, dtype=int)
+    result = np.zeros(BITS32, dtype=int)
 
     sign_a = a_arr[0]
     sign_b = b_arr[0]
@@ -100,8 +107,8 @@ def ieee_add(a_arr, b_arr):
     for bit in b_arr[1:9]:
         exp_b = exp_b * 2 + bit
 
-    mant_a = np.zeros(24, dtype=int)
-    mant_b = np.zeros(24, dtype=int)
+    mant_a = np.zeros(MANTISSA+1, dtype=int)
+    mant_b = np.zeros(MANTISSA+1, dtype=int)
 
     mant_a[0] = 1
     mant_b[0] = 1
@@ -126,7 +133,7 @@ def ieee_add(a_arr, b_arr):
     if sign_a == sign_b:
 
         carry = 0
-        for i in range(23, -1, -1):
+        for i in range(MANTISSA, -1, -1):
             s = mant_a[i] + mant_b[i] + carry
             mant_res[i+1] = s % 2
             carry = s // 2
@@ -146,7 +153,7 @@ def ieee_add(a_arr, b_arr):
             sign_res = sign_b
 
         borrow = 0
-        for i in range(23, -1, -1):
+        for i in range(MANTISSA, -1, -1):
             diff = big[i] - small[i] - borrow
 
             if diff < 0:
@@ -169,7 +176,7 @@ def ieee_add(a_arr, b_arr):
 
     result[0] = sign_res
 
-    exp_bits = decimal_to_binary_unsigned(exponent, 8)
+    exp_bits = decimal_to_binary_unsigned(exponent, EXP)
     result[1:9] = exp_bits
 
     result[9:] = mant_res[2:25]
@@ -188,7 +195,7 @@ def ieee_sub(a_arr, b_arr):
 
 def ieee_mul(a_arr, b_arr):
     import numpy as np
-    result = np.zeros(32, dtype=int)
+    result = np.zeros(BITS32, dtype=int)
     sign = int(a_arr[0]) ^ int(b_arr[0])
 
     exp_a = 0
@@ -212,24 +219,24 @@ def ieee_mul(a_arr, b_arr):
         mant_b = (mant_b << 1) | int(bit)
 
     if exp_a != 0:
-        mant_a |= (1 << 23)
+        mant_a |= (1 << MANTISSA)
     else:
         exp_a = 1
 
     if exp_b != 0:
-        mant_b |= (1 << 23)
+        mant_b |= (1 << MANTISSA)
     else:
         exp_b = 1
 
-    exponent = exp_a + exp_b - 127
+    exponent = exp_a + exp_b - BIAS
     product = mant_a * mant_b
-    mant_int = product >> 23
+    mant_int = product >> MANTISSA
 
     if mant_int == 0:
         result[0] = sign
         return result
 
-    if mant_int >= (1 << 24):
+    if mant_int >= (1 << MANTISSA+1):
         mant_int >>= 1
         exponent += 1
 
@@ -243,12 +250,12 @@ def ieee_mul(a_arr, b_arr):
         result[9:] = np.zeros(23, dtype=int)
         return result
 
-    mantissa_field = mant_int & ((1 << 23) - 1)
-    exp_bits = decimal_to_binary_unsigned(exponent, 8)
+    mantissa_field = mant_int & ((1 << MANTISSA) - 1)
+    exp_bits = decimal_to_binary_unsigned(exponent, EXP)
 
     result[0] = sign
     result[1:9] = exp_bits
-    for i in range(23):
+    for i in range(MANTISSA):
         result[9 + i] = (mantissa_field >> (22 - i)) & 1
 
     return result
@@ -257,12 +264,12 @@ def ieee_mul(a_arr, b_arr):
 def ieee_div(a_arr, b_arr):
     import numpy as np
     def exp_to_bits(e):
-        arr = np.zeros(8, dtype=int)
-        for i in range(8):
+        arr = np.zeros(EXP, dtype=int)
+        for i in range(EXP):
             arr[7 - i] = (e >> i) & 1
         return arr
 
-    result = np.zeros(32, dtype=int)
+    result = np.zeros(BITS32, dtype=int)
 
     sign_a = int(a_arr[0])
     sign_b = int(b_arr[0])
@@ -293,41 +300,41 @@ def ieee_div(a_arr, b_arr):
         mant_b = (mant_b << 1) | int(bit)
 
     if exp_a != 0:
-        mant_a |= (1 << 23)
+        mant_a |= (1 << MANTISSA)
     else:
         exp_a = 1
 
     if exp_b != 0:
-        mant_b |= (1 << 23)
+        mant_b |= (1 << MANTISSA)
     else:
         exp_b = 1
 
-    exponent = exp_a - exp_b + 127
-    product_shifted = (mant_a << 23) // mant_b
+    exponent = exp_a - exp_b + BIAS
+    product_shifted = (mant_a << MANTISSA) // mant_b
     mant_int = int(product_shifted)
 
     if mant_int == 0:
         result[0] = sign
         return result
 
-    if mant_int >= (1 << 24):
+    if mant_int >= (1 << MANTISSA+1):
         mant_int >>= 1
         exponent += 1
 
-    while mant_int < (1 << 23):
+    while mant_int < (1 << MANTISSA):
         mant_int <<= 1
         exponent -= 1
         if exponent <= 0:
             result[0] = sign
             return result
 
-    if exponent >= 255:
+    if exponent >= BIAS * 2 + 1:
         result[0] = sign
-        result[1:9] = np.ones(8, dtype=int)
-        result[9:] = np.zeros(23, dtype=int)
+        result[1:9] = np.ones(EXP, dtype=int)
+        result[9:] = np.zeros(MANTISSA, dtype=int)
         return result
 
-    mantissa_field = mant_int & ((1 << 23) - 1)
+    mantissa_field = mant_int & ((1 << MANTISSA) - 1)
     result[0] = sign
     result[1:9] = exp_to_bits(exponent)
     for i in range(23):

@@ -1,6 +1,8 @@
 import numpy as np
 
-BITS = 32
+BITS32 = 32
+BITS31 = 31
+FRAC_BITS = 20
 
 def decimal_to_binary_unsigned(n, bits=31):
     arr = np.zeros(bits, dtype=int)
@@ -12,7 +14,7 @@ def decimal_to_binary_unsigned(n, bits=31):
     return arr
 
 def direct_code(n):
-    result = np.zeros(BITS, dtype=int)
+    result = np.zeros(BITS32, dtype=int)
     if n < 0:
         result[0] = 1
         n = abs(n)
@@ -34,16 +36,16 @@ def twos_complement(n):
     oc = ones_complement(n)
     result = oc.copy()
     carry = 1
-    for i in range(BITS - 1, -1, -1):
+    for i in range(BITS32 - 1, -1, -1):
         s = result[i] + carry
         result[i] = s % 2
         carry = s // 2
     return result
 
 def add_twos_complement(a, b):
-    result = np.zeros(BITS, dtype=int)
+    result = np.zeros(BITS32, dtype=int)
     carry = 0
-    for i in range(BITS - 1, -1, -1):
+    for i in range(BITS32 - 1, -1, -1):
         s = a[i] + b[i] + carry
         result[i] = s % 2
         carry = s // 2
@@ -57,7 +59,7 @@ def twos_to_decimal(arr):
         return value
     inverted = 1 - arr
     carry = 1
-    for i in range(BITS - 1, -1, -1):
+    for i in range(BITS32 - 1, -1, -1):
         s = inverted[i] + carry
         inverted[i] = s % 2
         carry = s // 2
@@ -115,7 +117,6 @@ def subtract_binary(a, b):
     return result
 
 def divide_direct(a_arr, b_arr):
-    FRAC_BITS = 20
     if np.all(b_arr[1:] == 0):
         raise ValueError("Division by zero")
     sign = a_arr[0] ^ b_arr[0]
@@ -139,7 +140,6 @@ def divide_direct(a_arr, b_arr):
     return result
 
 def fixed_to_decimal(arr):
-    FRAC_BITS = 20
     sign = arr[0]
     magnitude = arr[1:]
     value = 0
