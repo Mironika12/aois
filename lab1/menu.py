@@ -156,25 +156,32 @@ def add_bcd_numbers():
     a_bcd = decimal_to_bcd(a)
     b_bcd = decimal_to_bcd(b)
 
-    res = add_bcd(a_bcd, b_bcd)
+    result_bcd = add_bcd(a_bcd, b_bcd)
 
-    print("BCD:", "".join(res.astype(str)))
-    print("Decimal:", bcd_to_decimal(res))
+    bits = result_bcd.astype(str)
+
+    grouped = [
+        "".join(bits[i:i + BCD_BITS])
+        for i in range(0, len(bits), BCD_BITS)
+    ]
+
+    print("BCD:", " ".join(grouped))
+    print("Decimal:", bcd_to_decimal(result_bcd))
 
 
 def main_menu():
     while True:
         print("\nВыберите операцию:")
-        print(" 1) Перевод числа в коды (IEEE)")
-        print(" 2) Сложение в дополнительном коде (two's complement)")
+        print(" 1) Перевод числа в коды")
+        print(" 2) Сложение в дополнительном коде")
         print(" 3) Вычитание в дополнительном коде")
         print(" 4) Умножение в прямом коде")
-        print(" 5) Деление в прямом коде (fixed-point)")
-        print(" 6) Сложение с плавающей точкой (IEEE-754)")
-        print(" 7) Вычитание с плавающей точкой (IEEE-754)")
-        print(" 8) Умножение с плавающей точкой (IEEE-754)")
-        print(" 9) Деление с плавающей точкой (IEEE-754)")
-        print("10) Сложение в BCD (8421)")
+        print(" 5) Деление в прямом коде с фиксированной точкой")
+        print(" 6) Сложение с плавающей точкой")
+        print(" 7) Вычитание с плавающей точкой")
+        print(" 8) Умножение с плавающей точкой")
+        print(" 9) Деление с плавающей точкой")
+        print("10) Сложение в BCD")
         print(" 0) Выход")
         choice = input("Выбор: ").strip()
 
