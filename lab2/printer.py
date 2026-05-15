@@ -29,21 +29,31 @@ def print_coverage_table(prime_terms, original_terms):
         print("Нет импликант")
         return
 
-    # заголовки столбцов
-    col_headers = [f"m{i+1}" for i in range(len(original_terms))]
+    from logic.table_analysis import term_to_str
 
-    # ширина для выравнивания
-    col_width = max(6, max(len(h) for h in col_headers) + 2)
+    # заголовки столбцов (исходные наборы)
+    col_headers = [
+        f"Набор {i+1}: {term_to_str(orig, True)}"
+        for i, orig in enumerate(original_terms)
+    ]
+
+    # ширина колонок
+    col_width = max(
+        10,
+        max(len(h) for h in col_headers) + 2
+    )
 
     # печать заголовка
-    header = " " * col_width
+    header = "Импликанта".ljust(col_width)
     for h in col_headers:
         header += h.center(col_width)
     print(header)
 
+    print("-" * len(header))
+
     # строки таблицы
     for i, term in enumerate(prime_terms):
-        row_name = f"t{i+1}"
+        row_name = f"{term_to_str(term, True)}"
         row_str = row_name.ljust(col_width)
 
         for orig in original_terms:
