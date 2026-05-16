@@ -3,6 +3,7 @@ import pytest
 from table.hash_table import HashTable
 from table.utils import compute_v, compute_h, char_value
 from table.hash_entry import HashEntry
+from config import *
 
 
 # -------s---------------------
@@ -275,3 +276,101 @@ def test_load_from_json_partial_invalid(tmp_path):
 
     assert result is True
     assert table.count == 1
+
+
+def test_rehash_trigger():
+
+    table = HashTable(size=5)
+
+    table.insert("биология", "1")
+    table.insert("биоценоз", "2")
+    table.insert("бактерия", "3")
+    table.insert("вакуоль", "4")
+
+    old_size = 5
+
+    table.insert("генетика", "5")
+
+    assert table.size > old_size
+
+
+def test_rehash_preserves_data():
+
+    table = HashTable(size=5)
+
+    data = {
+        "биология": "наука",
+        "биоценоз": "организмы",
+        "бактерия": "микроб",
+        "вакуоль": "органоид",
+        "генетика": "наследственность"
+    }
+
+    for k, v in data.items():
+        table.insert(k, v)
+
+    for k, v in data.items():
+        assert table.search(k) == v
+
+
+def test_rehash_changes_size():
+
+    table = HashTable(size=5)
+
+    old_size = table.size
+
+    for i, key in enumerate([
+        "биология",
+        "биоценоз",
+        "бактерия",
+        "вакуоль",
+        "генетика"
+    ]):
+        table.insert(key, str(i))
+
+    assert table.size != old_size
+
+
+def test_rehash_preserves_count():
+
+    table = HashTable(size=5)
+
+    keys = [
+        "биология",
+        "биоценоз",
+        "бактерия",
+        "вакуоль",
+        "генетика"
+    ]
+
+    for i, key in enumerate(keys):
+        table.insert(key, str(i))
+
+    assert table.count == len(keys)
+
+
+def test_rehash_collisions_still_work():
+
+    table = HashTable(size=5)
+
+    table.insert("биология", "1")
+    table.insert("биоценоз", "2")
+
+    assert table.search("биология") == "1"
+    assert table.search("биоценоз") == "2"
+
+
+def test_rehash_reduces_load_factor():
+
+    table = HashTable(size=5)
+
+    for key in [
+        "биология",
+        "биоценоз",
+        "бактерия",
+        "вакуоль",
+        "генетика"
+    ]:
+        table.insert(key, "x")
+
+    assert table.load_factor() < MAX_LOAD_FACTOR

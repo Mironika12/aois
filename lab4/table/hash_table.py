@@ -12,6 +12,7 @@ class HashTable:
         self.count = 0
         self.collisions = 0
 
+
     def is_valid_key(self, key):
         if len(key) < 2:
             return False
@@ -19,11 +20,12 @@ class HashTable:
         return all('а' <= ch.lower() <= 'я' or ch.lower() == 'ё'
                    for ch in key)
     
+
     def quadratic_probe(self, h, i):
         return (h + i ** 2) % self.size
     
-    def insert(self, key, value):
 
+    def insert(self, key, value, rehashing=False):
         if not self.is_valid_key(key):
             print("Некорректный ключ")
             return False
@@ -31,6 +33,10 @@ class HashTable:
         if self.search(key) is not None:
             print("Ключ уже существует")
             return False
+        
+        if not rehashing and ((self.count + 1) / self.size) > MAX_LOAD_FACTOR:
+            print("Превышен коэффициент заполнения, выполняется расширение таблицы")
+            self.rehash()
 
         v = compute_v(key)
         h = compute_h(key, self.size)
@@ -69,13 +75,12 @@ class HashTable:
         print("Таблица переполнена")
         return False
     
-    def search(self, key):
 
+    def search(self, key):
         if not self.is_valid_key(key):
             return None
 
         h = compute_h(key, self.size)
-
         i = 0
 
         while i < self.size:
@@ -93,10 +98,9 @@ class HashTable:
 
         return None
     
+
     def update(self, key, new_value):
-
         h = compute_h(key, self.size)
-
         i = 0
 
         while i < self.size:
@@ -115,10 +119,9 @@ class HashTable:
 
         return False
     
+
     def delete(self, key):
-
         h = compute_h(key, self.size)
-
         i = 0
 
         while i < self.size:
@@ -143,14 +146,12 @@ class HashTable:
     
     def load_factor(self):
         return self.count / self.size
-    
+
+
     def display(self):
-
         print("-" * 120)
-
         print(f"{'Idx':<5} {'Key':<15} {'V(K)':<6} {'h(V)':<6} "
               f"{'U':<3} {'C':<3} {'D':<3} {'Value'}")
-
         print("-" * 120)
 
         for i, entry in enumerate(self.table):
@@ -172,7 +173,6 @@ class HashTable:
                   f"{entry.value}")
 
         print("-" * 120)
-
         print(f"Заполненность: {self.load_factor():.2f}")
         print(f"Количество коллизий: {self.collisions}")
 
@@ -202,7 +202,6 @@ class HashTable:
                     loaded += 1
 
             print(f"Загружено записей: {loaded}")
-
             return True
 
         except FileNotFoundError:
@@ -216,3 +215,15 @@ class HashTable:
         except Exception as e:
             print(f"Ошибка: {e}")
             return False
+        
+    def rehash(self):
+        old_table = self.table
+
+        self.size = self.size * 2 + 1
+        self.table = [HashEntry() for _ in range(self.size)]
+        self.count = 0
+        self.collisions = 0
+
+        for entry in old_table:
+            if entry.U == 1 and entry.D == 0:
+                self.insert(entry.key, entry.value, rehashing=True)
