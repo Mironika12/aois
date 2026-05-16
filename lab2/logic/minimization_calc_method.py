@@ -88,7 +88,6 @@ def remove_redundant(terms: list[dict], original_terms: list[dict]) -> list[dict
     if not terms or not original_terms:
         return terms
 
-    # Для каждого терма считаем, какие исходные наборы он покрывает
     cover_masks = []
     for term in terms:
         mask = 0
@@ -99,12 +98,10 @@ def remove_redundant(terms: list[dict], original_terms: list[dict]) -> list[dict
 
     full_mask = (1 << len(original_terms)) - 1
 
-    # Если какой-то терм вообще ничего не покрывает, он бесполезен
     candidates = [i for i, mask in enumerate(cover_masks) if mask != 0]
     if not candidates:
         return []
 
-    # Сортировка для более быстрого поиска: сначала термы с большим покрытием
     candidates.sort(key=lambda i: (-cover_masks[i].bit_count(), term_literal_count(terms[i])))
 
     best_indices = None
@@ -123,13 +120,11 @@ def remove_redundant(terms: list[dict], original_terms: list[dict]) -> list[dict
         if pos >= len(candidates):
             return
 
-        # Если уже не лучше текущего лучшего решения, дальше идти смысла нет
         if best_key is not None and len(chosen) >= best_key[0]:
             return
 
         idx = candidates[pos]
 
-        # Взять терм
         dfs(
             pos + 1,
             chosen + [idx],
@@ -137,7 +132,6 @@ def remove_redundant(terms: list[dict], original_terms: list[dict]) -> list[dict
             literal_count + term_literal_count(terms[idx])
         )
 
-        # Не брать терм
         dfs(pos + 1, chosen, covered_mask, literal_count)
 
     dfs(0, [], 0, 0)
@@ -200,7 +194,6 @@ def select_remaining(table: list[list[int]], used_rows: set[int]) -> set[int]:
     selected = set()
 
     while table and any(any(row) for row in table):
-        # выбираем строку с максимальным покрытием
         best = -1
         best_count = -1
 
@@ -218,7 +211,6 @@ def select_remaining(table: list[list[int]], used_rows: set[int]) -> set[int]:
 
         selected.add(best)
 
-        # удаляем покрытые столбцы
         covered_cols = [j for j, v in enumerate(table[best]) if v == 1]
 
         new_table = []
@@ -252,22 +244,11 @@ def minimize(terms):
 
 def minimize_table_method(terms: list[dict]) -> list[dict]:
     original_terms = terms.copy()
-
-    # 1. склеивание
     terms = merge_all(terms)
-
-    # 2. таблица
     table = build_coverage_table(terms, original_terms)
-
-    # 3. существенные
     essential = find_essential_implicants(table)
-
-    # 4. убрать покрытые
     reduced_table = remove_covered_columns(table, essential)
-
-    # 5. добрать
     extra = select_remaining(reduced_table, essential)
-
     selected = essential.union(extra)
 
     return [terms[i] for i in selected]
