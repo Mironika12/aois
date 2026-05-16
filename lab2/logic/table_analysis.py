@@ -15,6 +15,11 @@ def index_form(table: list[dict]) -> str:
     return "".join(str(int(row['f'])) for row in table)
 
 
+def index_number(table: list[dict]) -> int:
+    binary = index_form(table)
+    return int(binary, 2)
+
+
 def build_sdnf(table: list[dict]) -> list[dict]:
     terms = []
 

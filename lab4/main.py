@@ -1,4 +1,4 @@
-from hash_table import HashTable
+from table.hash_table import HashTable
 
 
 MENU = """
@@ -8,7 +8,7 @@ MENU = """
 4. Удалить запись
 5. Показать таблицу
 6. Загрузить из JSON
-7. Выход
+0. Выход
 """
 
 
@@ -60,7 +60,7 @@ def main():
             filename = input("Имя JSON файла: ")
             ht.load_from_json(filename)
 
-        elif choice == '7':
+        elif choice == '0':
             break
 
 if __name__ == "__main__":

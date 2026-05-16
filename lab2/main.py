@@ -1,39 +1,10 @@
 from logic.table_build import build_table, print_table, read_expr
-from logic.table_analysis import (
-    build_sdnf,
-    build_sknf,
-    numeric_sdnf,
-    numeric_sknf,
-    index_form,
-    print_terms
-)
-from logic.post_zhegalkin import (
-    is_T0,
-    is_T1,
-    is_self_dual,
-    is_monotonic,
-    is_linear,
-    zhegalkin_polynomial
-)
-from logic.dummy_vars import (
-    find_dummy_vars,
-    boolean_derivative,
-    mixed_derivative
-)
-from logic.minimization_calc_method import (
-    minimize,
-    minimize_table_method,
-    merge_stages,
-    remove_redundant
-)
-from logic.minimization_carno import (
-    minimize_kmap,
-    print_kmap
-)
-from printer import (  
-    print_merge_stages,
-    print_coverage_table,
-)
+from logic.table_analysis import *
+from logic.post_zhegalkin import *
+from logic.dummy_vars import *
+from logic.minimization_calc_method import *
+from logic.minimization_carno import *
+from printer import *
 
 
 def analyze(expr: str):
@@ -41,13 +12,11 @@ def analyze(expr: str):
     print(f"Функция: {expr}")
     print("=" * 60)
 
-    # ---------------- ТАБЛИЦА ----------------
     table = build_table(expr)
 
     print("\nТаблица истинности:")
     print_table(table)
 
-    # ---------------- ФОРМЫ ----------------
     print("\nСДНФ:")
     sdnf = build_sdnf(table)
     print_terms(sdnf, True)
@@ -56,13 +25,13 @@ def analyze(expr: str):
     sknf = build_sknf(table)
     print_terms(sknf, False)
 
-    # ---------------- ЧИСЛОВЫЕ ----------------
     print("\nЧисловые формы:")
     print(f"СДНФ: {numeric_sdnf(table)}")
     print(f"СКНФ: {numeric_sknf(table)}")
 
-    print("\nИндексная форма:")
+    print("\nИндексные формы:")
     print(index_form(table))
+    print(index_number(table))
 
     print("\nМинимизация (расчетный метод):")
 
